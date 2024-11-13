@@ -1,0 +1,119 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <script src="bootstrap/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script src="jquery-3.7.1.min.js"></script>
+        <style>
+            h1{
+                text-align: center;
+            }
+            .done span {
+                text-decoration: line-through;
+                background-color: green;
+            }
+            #done-tasks {
+                background-color: rgba(0, 255, 0, 0.1);  
+                padding: 10px;
+                border-radius: 5px;
+                margin-top: 20px;
+                opacity: 0.7;
+            }
+        </style>
+        <script>
+            function loadTasks() {
+                let tasks = JSON.parse(localStorage.getItem("tasks"));
+
+                if (tasks) {
+                    tasks.forEach(function(task) {
+                        let taskElement = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                               <span ${task.done ? 'style="text-decoration: line-through; background-color: green;"' : ''}>${task.text}</span>
+                                               <div class="btn-group">
+                                                   <button class="btn btn-success done-btn">${task.done ? 'undo' : 'done'}</button>
+                                                   <button class="delbtn btn btn-danger">Delete</button>
+                                               </div>
+                                           </li>`;
+                        if (task.done) {
+                            jQuery("#done-tasks ul").append(taskElement);
+                        } else {
+                            jQuery("#comments").append(taskElement);
+                        }
+                    });
+                }
+            }
+            
+            function saveTasks() {
+                let tasks = [];
+                jQuery("#comments li").each(function() {
+                    let taskText = jQuery(this).find("span").text();
+                    let isDone = jQuery(this).hasClass("done");
+                    tasks.push({ text: taskText, done: isDone });
+                });
+
+                
+                localStorage.setItem("tasks", JSON.stringify(tasks));
+                
+                alert("Tasks saved to local storage!");
+            }
+          
+
+            
+            function getname() {
+                let comment = jQuery("#name").val();
+                if (comment) {
+                    jQuery("#comments").append(`<li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>${comment}</span>
+                                                    <div class="btn-group">
+                                                        <button class="btn btn-success done-btn">done</button>
+                                                        <button class="delbtn btn btn-danger">Delete</button>
+                                                    </div>
+                                                </li>`);
+                    jQuery("#name").val('');
+                    saveTasks();
+                }
+            }
+ 
+            $(function() {
+                
+                $.each(function(object, key, val){
+                    $("#comments").append("<li><span>"+key+"</span></li>")
+                })
+
+        
+                $(document).on("click", ".delbtn", function() {
+                    jQuery(this).closest('li').remove();
+                    saveTasks(); 
+                });
+
+                
+                $(document).on("click", ".done-btn", function() {
+                    let button = jQuery(this).html();
+                    if (button == 'done') {
+                        jQuery(this).closest('li').addClass("done");
+                        jQuery(this).html("undo");
+                        let task = jQuery(this).closest('li').clone();
+                        jQuery("#done-tasks").append(task);
+                    } else {
+                        jQuery(this).closest('li').removeClass("done");
+                        let task = jQuery(this).closest('li').clone();
+                        jQuery("#comments").append(task);
+                    }
+                    saveTasks(); 
+                });
+            });
+        </script>
+    </head>
+    <body>
+
+        <h1>To do List</h1>
+        <div class="input-group mb-3">
+            <textarea id="name" class="form-control custom-control" rows="3" style="resize:none"></textarea>
+            <button class="btn btn-primary input-group-btn" onclick="getname()">Add</button>
+        </div> 
+        <ul id="comments" class="list-group"></ul>
+
+        <div id="done-tasks">
+            <ul class="list-group"></ul>
+        </div>
+
+    </body>
+</html>
